@@ -1,4 +1,4 @@
-<h1><s>Suggest a laptop<s><h1>
+<h1><b>Suggest a laptop<b><h1>
 <h2><s>Recommend a laptop for users based on their needs and budget.<s><h2>
 <h3><s>Project description<s><h3>
 <p>Are you the computer guy/gal of the family? Are you approached every time they need a new laptop? Me too, and that's why I want to make a website that suggests the laptop for me!<p>
