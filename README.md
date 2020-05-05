@@ -1,7 +1,7 @@
 <h1>Suggest a laptop<h1>
 <h2>Recommend a laptop for users based on their needs and budget.<h2>
 <h3>Project description<h3>
-<p>Are you the computer guy/gal of the family? Are you approached they need a new laptop? Me too, and that's why I want to make a website that suggests the laptop for me!<p>
+<p>Are you the computer guy/gal of the family? Are you approached every time they need a new laptop? Me too, and that's why I want to make a website that suggests the laptop for me!<p>
 <p>My vision is a system that collects retail data on laptops including hardware specs, operating systems, price, and possibly user/professional reviews to suggest a laptop within a user's budget, prioritizing their needs. The user will input their budget and what they plan to use the laptop for, rating important features on a scale of 1-10. Our system will calculate which laptop is the best fit for their needs within their budget.<p>
 <h3>Team<h3>
 <p>I'm looking for at least 2 others to join the team. I anticipate that this project can scale to fit our workload budget, seeing that we can arbitrarily add adapters for retail websites after we get the backend working. I'm especially looking for someone who has experience with API's or webscraping to collect the retail data.<p>
