@@ -48,7 +48,35 @@ app.get('/laptop', function(req, res) {
     });
 });
 
-// app.get('/cpu/:cpu_id', ...
+ app.get('/cpu/:cpu_id', function(req, res) {
+     let cpuID = req.params.cpu_id
+     console.log("GET /cpu/ " + cpuID);
+     
+    let laptopDB = new sqlite.Database(LAPTOP_DB, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+    
+    
+    laptopDB.all(`SELECT cpu_id, score FROM cpu WHERE cpu_id = ?`, [cpuID], (err, rows) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(rows);
+        res.status(200).send(rows);
+    });
+    
+     laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+     
+     
+    });
 
 // app.get('/ram/:ram_id', ...
 
@@ -91,7 +119,37 @@ app.put('/laptop', function(req, res) {
     res.status.send(`Successfully added laptop model '${model}'.`)
 });
 
-// app.put('/cpu', ...
+app.put('/cpu', function(req, res) {
+    // Get the request object
+    console.log("PUT /cpu");
+    console.log(req.body);
+    let cpuID = req.body.cpu_id;
+    let score = req.body.score;
+    
+    let laptopDB = new sqlite.Database(LAPTOP_DB, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+
+    // Write to the database
+    laptopDB.run(`INSERT INTO cpu(cpu_id, score) VALUES(?, ?)`, [cpuID, score], function(err) {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(`Item inserted with rowid ${this.lastID} into laptop table.`);
+    });
+
+    laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+
+    res.status(200).send(`Successfully added cpu '${cpuID}'.`)
+});
 
 // app.put('/ram', ...
 
