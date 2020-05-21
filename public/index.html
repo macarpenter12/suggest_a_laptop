@@ -1,9 +1,19 @@
 <html>
     <head>
+        <script src="index.js"></script>
         <title>Suggest a Laptop</title>
     </head>
     <body>
         <h1>GET or visit /laptop to see a list of laptops stored in the database</h1>
         <h1>PUT /laptop to add a laptop to the database</h1>
+        
+       <select id="userPref">
+            <option value="model">Model</option>
+            <option value="cpu">CPU</option>
+            <option value="ram">RAM</option>
+        </select>
+        
+        <button onclick="getUserPref()">Get selected value</button>
+        
     </body>
 </html>
