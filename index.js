@@ -78,6 +78,32 @@ app.get('/laptop', function(req, res) {
 
     });
 
+app.get('/ram', function(req, res) {
+    console.log("GET /ram");
+    let laptopDB = new sqlite.Database(LAPTOP_DB, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+
+    laptopDB.all(`SELECT * FROM ram`, [], (err, rows) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(rows);
+        res.status(200).send(rows);
+    });
+
+    laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+
+});
+
 app.get('/ram/:ram_id', function(req, res) {
     let ramID = req.params.ram_id;
     console.log("GET /ram/ " + ramID);  // log the get request
@@ -111,7 +137,7 @@ app.get('/ram/:ram_id', function(req, res) {
 
 
 
-app.put('/laptop', function(req, res) {
+app.put('/laptop', function(req, res, next) {
     // Get the request object
     console.log("PUT /laptop");
     console.log(req.body);
@@ -143,7 +169,7 @@ app.put('/laptop', function(req, res) {
         console.log("Closed the connection to laptop database.");
     });
 
-    res.status.send(`Successfully added laptop model '${model}'.`)
+    res.send(`Successfully added laptop model '${model}'.`);
 });
 
 app.put('/cpu', function(req, res) {
@@ -195,7 +221,7 @@ app.put('/ram', function(req, res) {
     });
 
     // Write to database
-    laptopDB.run(`INSERT INTO ram(ram_id, capacity, speed) VALUES(?, ?)`, [ramID, capacity, speed], function(err) {
+    laptopDB.run(`INSERT INTO ram(ram_id, capacity, speed) VALUES(?, ?, ?)`, [ramID, capacity, speed], function(err) {
         if (err) {
             res.status(500).send(err.message);
         }
