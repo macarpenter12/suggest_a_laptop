@@ -169,7 +169,7 @@ app.put('/laptop', function(req, res, next) {
         console.log("Closed the connection to laptop database.");
     });
 
-    res.send(`Successfully added laptop model '${model}'.`);
+    res.status.send(`Successfully added laptop model '${model}'.`);
 });
 
 app.put('/cpu', function(req, res) {
