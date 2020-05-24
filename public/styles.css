@@ -1,0 +1,31 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    background: #fff;
+    padding: 0px;
+    margin: 0px;
+}
+
+button {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+}
+
+.content-body {
+    margin: 50px;
+}
+
+.column {
+    float: left;
+    width: 200px;
+}
+
+.scrollbox {
+    width: 400px;
+    height: 100px;
+    overflow: scroll;
+}
+
+table {
+    text-align: center;
+}

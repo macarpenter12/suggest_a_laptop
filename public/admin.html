@@ -1,0 +1,112 @@
+<html>
+
+<head>
+    <title>Database Admin</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="content-body">
+        <table>
+            <tr>
+                <td><label for="price">Price: </label></td>
+                <td><input type="text" id="price" name="price"></td>
+                <td rowspan="6">
+                    <div class="scrollbox" id="laptopList">asdf</div>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="model">Model: </label></td>
+                <td><input type="text" id="model" name="model"></td>
+            </tr>
+            <tr>
+                <td><label for="cpu">CPU: </label></td>
+                <td><input type="text" id="cpu" name="cpu"></td>
+            </tr>
+            <tr>
+                <td><label for="ram">RAM: </label><br></td>
+                <td><input type="text" id="ram" name="ram"></td>
+            </tr>
+            <tr>
+                <td><label for="storage">Storage size: </label></td>
+                <td><input type="text" id="storage" name="storage"></td>
+            </tr>
+            <tr>
+                <td><label for="battery">Battery life: </label></td>
+                <td><input type="text" id="battery" name="battery"></td>
+            </tr>
+
+            <tr>
+                <td><br></td>
+            </tr>
+
+            <tr>
+                <td><button id="submitLaptop" onclick="submitLaptop()">Submit Laptop</button></td>
+                <td><button id="deleteLaptop" onclick="deleteLaptop()">Delete Laptop</button></td>
+            </tr>
+
+            <tr>
+                <td><br></td>
+            </tr>
+
+            <tr>
+                <td><label for="cpu_id">CPU ID: </label></td>
+                <td><input type="text" id="cpu_id"></td>
+                <td rowspan="2">
+                    <div class="scrollbox" id="cpuList"></div>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="cpu_score">CPU score: </label></td>
+                <td><input type="text" id="cpu_score"></td>
+            </tr>
+
+            <tr>
+                <td><br></td>
+            </tr>
+
+            <tr>
+                <td colspan="2"><button id="submitCpu" onclick="submitCpu()">Submit CPU</button></td>
+            </tr>
+
+            <tr>
+                <td><br></td>
+            </tr>
+
+            <tr>
+                <td><label for="ram_id">RAM ID: </label></td>
+                <td><input type="text" id="ram_id"></td>
+                <td rowspan="3">
+                    <div class="scrollbox" id="ramList"></div>
+                </td>
+            </tr>
+            <tr>
+                <td><label for="ram_capacity">RAM capacity: </label></td>
+                <td><input type="text" id="ram_capacity"></td>
+            </tr>
+            <tr>
+                <td><label for="ram_speed">RAM speed: </label></td>
+                <td><input type="text" id="ram_speed"></td>
+            </tr>
+
+            <tr>
+                <td><br></td>
+            </tr>
+
+            <tr>
+                <td colspan="2"><button id="submitRam" onclick="submitRam()">Submit RAM</button></td>
+            </tr>
+
+            <tr>
+                <td><br></td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js" integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM=" crossorigin="anonymous"></script>
+    <script src="admin.js"></script>
+</body>
+
+</html>

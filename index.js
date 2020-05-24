@@ -21,12 +21,19 @@ const PORT_NUMBER = 3000;
 
 
 app.get('/', function(req, res) {
-    console.log("GET /");
-    res.sendfile('index.html');
+    console.info(new Date().toLocaleString() + " - GET /");
+    res.sendFile('public/index.html' , { root : __dirname});
 });
 
+app.get('/admin', function(req, res) {
+    console.info(new Date().toLocaleString() + " - GET /admin");
+    res.sendFile('public/admin.html' , { root : __dirname});
+})
+
+// app.get('/suggestion')
+
 app.get('/laptop', function(req, res) {
-    console.log("GET /laptop");
+    console.info(new Date().toLocaleString() + " - GET /laptop");
     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
         if (err) {
             res.status(500).send(err.message);
@@ -53,7 +60,7 @@ app.get('/laptop', function(req, res) {
 
 app.get('/cpu/:cpu_id', function(req, res) {
     let cpuID = req.params.cpu_id;
-    console.log("GET /cpu/ " + cpuID);
+    console.info(new Date().toLocaleString() + " - GET /cpu/ " + cpuID);
 
     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
         if (err) {
@@ -79,8 +86,33 @@ app.get('/cpu/:cpu_id', function(req, res) {
     });
 });
 
+app.get('/cpu', function(req, res) {
+    console.info(new Date().toLocaleString() + " - GET /cpu");
+    let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+
+    laptopDB.all(`SELECT * FROM cpu`, [], (err, rows) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(rows);
+        res.status(200).send(rows);
+    });
+
+    laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+});
+
 app.get('/ram', function(req, res) {
-    console.log("GET /ram");
+    console.info(new Date().toLocaleString() + " - GET /ram");
     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
         if (err) {
             res.status(500).send(err.message);
@@ -102,12 +134,11 @@ app.get('/ram', function(req, res) {
         }
         console.log("Closed the connection to laptop database.");
     });
-
 });
 
 app.get('/ram/:ram_id', function(req, res) {
     let ramID = req.params.ram_id;
-    console.log("GET /ram/ " + ramID); // log the get request
+    console.info(new Date().toLocaleString() + " - GET /ram/ " + ramID); // log the get request
 
     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => { // connect to database
         if (err) {
@@ -140,7 +171,7 @@ app.get('/ram/:ram_id', function(req, res) {
 
 app.put('/laptop', function(req, res, next) {
     // Get the request object
-    console.log("PUT /laptop");
+    console.info(new Date().toLocaleString() + " - PUT /laptop");
     console.log(req.body);
     let model = req.body.model;
     let price = req.body.price;
@@ -156,7 +187,7 @@ app.put('/laptop', function(req, res, next) {
 
 app.put('/cpu', function(req, res) {
     // Get the request object
-    console.log("PUT /cpu");
+    console.info(new Date().toLocaleString() + " - PUT /cpu");
     console.log(req.body);
     let cpuID = req.body.cpu_id;
     let score = req.body.score;
@@ -168,7 +199,7 @@ app.put('/cpu', function(req, res) {
 
 app.put('/ram', function(req, res) {
     // Get ram info to put into database
-    console.log("PUT /ram");
+    console.info(new Date().toLocaleString() + " - PUT /ram");
     console.log(req.body);
     let ramID = req.body.ram_id;
     let capacity = req.body.capacity;
@@ -184,8 +215,8 @@ app.put('/ram', function(req, res) {
 
 
 app.delete('/laptop/:model', function(req, res) {
-    console.log("DELETE /laptop/[model]");
-    let model = req.body.model;
+    let model = req.params.model;
+    console.info(new Date().toLocaleString() + " - DELETE /laptop/" + model);
 
     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
         if (err) {
