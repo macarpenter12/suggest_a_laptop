@@ -3,13 +3,11 @@
 var laptopList = document.getElementById("laptopList");
 var cpuList = document.getElementById("cpuList");
 var ramList = document.getElementById("ramList");
-updateLaptopList();
-updateCpuList();
-updateRamList();
+updateAllLists();
 
-function updateLaptopList() {
+async function updateLaptopList() {
     laptopList.innerHTML = "";
-    axios.get('/laptop')
+    await axios.get('/laptop')
         .then(function(res) {
             let rows = res.data;
             rows.forEach(function(item, index) {
@@ -18,9 +16,9 @@ function updateLaptopList() {
         });
 }
 
-function updateCpuList() {
-    laptopList.innerHTML = "";
-    axios.get('/cpu')
+async function updateCpuList() {
+    cpuList.innerHTML = "";
+    await axios.get('/cpu')
         .then(function(res) {
             let rows = res.data;
             rows.forEach(function(item, index) {
@@ -29,9 +27,9 @@ function updateCpuList() {
         });
 }
 
-function updateRamList() {
-    laptopList.innerHTML = "";
-    axios.get('/ram')
+async function updateRamList() {
+    ramList.innerHTML = "";
+    await axios.get('/ram')
         .then(function(res) {
             let rows = res.data;
             rows.forEach(function(item, index) {
@@ -40,7 +38,13 @@ function updateRamList() {
         });
 }
 
-function submitLaptop() {
+async function updateAllLists() {
+    updateLaptopList();
+    updateCpuList();
+    updateRamList();
+}
+
+async function submitLaptop() {
     let price = document.getElementById("price").value;
     let model = document.getElementById("model").value;
     let cpu = document.getElementById("cpu").value;
@@ -48,7 +52,7 @@ function submitLaptop() {
     let storage = document.getElementById("storage").value;
     let battery = document.getElementById("battery").value;
 
-    axios.put('/laptop', {
+    await axios.put('/laptop', {
             price: price,
             model: model,
             cpu_id: cpu,
@@ -65,24 +69,24 @@ function submitLaptop() {
     updateLaptopList();
 }
 
-function deleteLaptop() {
+async function deleteLaptop() {
     let model = document.getElementById("model").value;
-    console.log(`/laptop/${model}`);
-    axios.delete(`/laptop/${model}`)
-    .then(function(res) {
-        console.info(res);
-    })
-    .catch(function(err) {
-        console.log(err);
-    });
+    console.log(`DELETE /laptop/${model}`);
+    await axios.delete(`/laptop/${model}`)
+        .then(function(res) {
+            console.info(res);
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
     updateLaptopList();
 }
 
-function submitCpu() {
+async function submitCpu() {
     let cpuID = document.getElementById("cpu_id").value;
     let cpuScore = document.getElementById("cpu_score").value;
 
-    axios.put('/cpu', {
+    await axios.put('/cpu', {
             cpu_id: cpuID,
             score: cpuScore
         })
@@ -92,14 +96,28 @@ function submitCpu() {
         .catch(function(err) {
             console.log(err);
         });
+    updateCpuList();
 }
 
-function submitRam() {
+async function deleteCpu() {
+    let cpuID = document.getElementById("cpu_id").value;
+    console.log(`DELETE /cpu/${cpuID}`);
+    await axios.delete(`/cpu/${cpuID}`)
+        .then(function(res) {
+            console.info(res);
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
+    updateCpuList();
+}
+
+async function submitRam() {
     let ramID = document.getElementById("ram_id").value;
     let ramCapacity = document.getElementById("ram_capacity").value;
     let ramSpeed = document.getElementById("ram_speed").value;
 
-    axios.put('/ram', {
+    await axios.put('/ram', {
             ram_id: ramID,
             capacity: ramCapacity,
             speed: ramSpeed
@@ -110,4 +128,18 @@ function submitRam() {
         .catch(function(err) {
             console.log(err);
         });
+    updateRamList();
+}
+
+async function deleteRam() {
+    let ramID = document.getElementById("ram_id");
+    console.log(`DELETE /ram/${ramID}`);
+    await axios.delete(`/ram/${ramID}`)
+        .then(function(res) {
+            console.info(res);
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
+    updateRamList();
 }

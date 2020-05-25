@@ -22,12 +22,46 @@ const PORT_NUMBER = 3000;
 
 app.get('/', function(req, res) {
     console.info(new Date().toLocaleString() + " - GET /");
-    res.sendFile('public/index.html' , { root : __dirname});
+    res.sendFile('public/index.html', { root: __dirname });
 });
 
 app.get('/admin', function(req, res) {
     console.info(new Date().toLocaleString() + " - GET /admin");
-    res.sendFile('public/admin.html' , { root : __dirname});
+    res.sendFile('public/admin.html', { root: __dirname });
+});
+
+app.post('/admin/sql', function(req, res) {
+    console.info(new Date().toLocaleString() + " - POST /admin/sql");
+    let sql = req.body.sql_statement;
+    
+    if (sql.toLowerCase().includes('delete') || sql.toLowerCase().includes('insert')) {
+        res.status(400).send('DELETE and INSERT statements not allowed through this endpoint.');
+        console.log("ERROR: Attempted to DELETE/INSERT at /admin/sql: '" + sql + "'");
+        return;
+    }
+    
+    let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+
+    // Retrieve database items
+    laptopDB.all(sql, (err, rows) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(rows);
+        res.status(200).send(rows);
+    });
+
+    laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
 })
 
 // app.get('/suggestion')
@@ -179,7 +213,7 @@ app.put('/laptop', function(req, res, next) {
     let ramID = req.body.ram_id;
     let storage = req.body.storage;
     let battery = req.body.battery;
-    
+
     dbInsert(LAPTOP_TABLE, [model, price, cpuID, ramID, storage, battery]);
 
     res.status(200).send(`Successfully added laptop model '${model}'.`);
@@ -191,7 +225,7 @@ app.put('/cpu', function(req, res) {
     console.log(req.body);
     let cpuID = req.body.cpu_id;
     let score = req.body.score;
-    
+
     dbInsert(CPU_TABLE, [cpuID, score]);
 
     res.status(200).send(`Successfully added cpu '${cpuID}'.`);
@@ -204,7 +238,7 @@ app.put('/ram', function(req, res) {
     let ramID = req.body.ram_id;
     let capacity = req.body.capacity;
     let speed = req.body.speed;
-    
+
     dbInsert(RAM_TABLE, [ramID, capacity, speed]);
 
     res.status(200).send(`Successfully added ram '${ramID}'.`);
@@ -240,6 +274,62 @@ app.delete('/laptop/:model', function(req, res) {
     });
 
     res.status(200).send(`Successfully deleted laptop model '${model}''.`);
+});
+
+app.delete('/cpu/:cpu_id', function(req, res) {
+    let cpuID = req.params.cpu_id;
+    console.info(new Date().toLocaleString() + " - DELETE /cpu/" + cpuID);
+
+    let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+
+    laptopDB.run(`DELETE FROM cpu WHERE cpu_id = ?`, cpuID, function(err) {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(`Deleted CPU ${cpuID} from cpu table.`);
+    });
+
+    laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+
+    res.status(200).send(`Successfully deleted cpu with ID '${cpuID}''.`);
+});
+
+app.delete('/ram/:ram_id', function(req, res) {
+    let ramID = req.params.ram_id;
+    console.info(new Date().toLocaleString() + " - DELETE /ram/" + ramID);
+
+    let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Connected to laptop database.");
+    });
+
+    laptopDB.run(`DELETE FROM ram WHERE ram_id = ?`, ramID, function(err) {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log(`Deleted RAM ${ramID} from ram table.`);
+    });
+
+    laptopDB.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+
+    res.status(200).send(`Successfully deleted ram with ID '${ramID}''.`);
 });
 
 
