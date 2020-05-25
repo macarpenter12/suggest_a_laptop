@@ -2,18 +2,77 @@
     <head>
         <script src="app.js"></script>
         <title>Suggest a Laptop</title>
+         <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+        <link href="styles.css" rel="stylesheet">
     </head>
     <body>
-        <h1>GET or visit /laptop to see a list of laptops stored in the database</h1>
-        <h1>PUT /laptop to add a laptop to the database</h1>
+        <h1>Suggest A Laptop</h1>
+        <h1>Rate importance of each feature from 1-10</h1>
         
-       <select id="userPref">
-            <option value="model">Model</option>
-            <option value="cpu">CPU</option>
-            <option value="ram">RAM</option>
-        </select>
+    <form>
+    
+    <label for="price">Price:</label><br>
+    <input type="text" id="price" name="price"><br>
+    
+    <label for="batteryVal">Battery Life:</label>
+    <select id="batteryVal">
+        <option value=1 >1</option>
+        <option value=2 >2</option>
+        <option value=3 >3</option>
+        <option value=4 >4</option>
+        <option value=5 >5</option>
+        <option value=6 >6</option>
+        <option value=7 >7</option>
+        <option value=8 >8</option>
+        <option value=9 >9</option>
+        <option value=10 >10</option>
+    </select><br>
+    
+    <label for="cpuVal">CPU:</label>
+       <select id="cpuVal">
+            <option value=1 >1</option>
+            <option value=2 >2</option>
+            <option value=3 >3</option>
+            <option value=4 >4</option>
+            <option value=5 >5</option>
+            <option value=6 >6</option>
+            <option value=7 >7</option>
+            <option value=8 >8</option>
+            <option value=9 >9</option>
+            <option value=10 >10</option>
+        </select><br>
         
-        <button onclick="getUserPref()">Get selected value</button>
+        <label for="ramVal">RAM:</label>
+        <select id="ramVal">
+            <option value=1 >1</option>
+            <option value=2 >2</option>
+            <option value=3 >3</option>
+            <option value=4 >4</option>
+            <option value=5 >5</option>
+            <option value=6 >6</option>
+            <option value=7 >7</option>
+            <option value=8 >8</option>
+            <option value=9 >9</option>
+            <option value=10 >10</option>
+        </select><br>
+        
+        <label for="storageVal">Storage:</label>
+        <select id="storageVal">
+            <option value=1 >1</option>
+            <option value=2 >2</option>
+            <option value=3 >3</option>
+            <option value=4 >4</option>
+            <option value=5 >5</option>
+            <option value=6 >6</option>
+            <option value=7 >7</option>
+            <option value=8 >8</option>
+            <option value=9 >9</option>
+            <option value=10 >10</option>
+        </select><br>
+        
+        </form>
+        
+        <button onclick="getUserPref()">Get laptop suggestion</button>
         
     </body>
 </html>
