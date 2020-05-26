@@ -29,34 +29,45 @@ app.get('/', function(req, res) {
 app.put('/suggestion', function(req, res) {
     console.info(new Date().toLocaleString() + " - PUT /suggestion");
     console.info('Generating suggestion...');
+    
+    let ramCapacity = 0;
+    if (req.body.ramScore < 4) {
+        ramCapacity = 4;
+    } else if (req.body.ramScore < 7) {
+        ramCapacity = 8;
+    } else if (req.body.ramScore < 9) {
+        ramCapacity = 16;
+    } else {
+        ramCapacity = 32;
+    }
 
     let sql =
-        `SELECT MAX(score) max_score, MAX(speed) max_speed, MIN(speed) min_speed
-           FROM cpu
-           JOIN ram`;
+        `SELECT MAX(speed) max_speed, MIN(speed) min_speed FROM ram WHERE capacity = ?`;
 
     let db = new sqlite.Database(DB_FILE_NAME, (err) => {
         if (err) {
             console.log(err.message);
-            throw err;
+            return;
         }
         console.log('Connected to database');
     });
 
-    db.get(sql, (err, data) => {
+    db.get(sql, [ramCapacity], (err, data) => {
         if (err) {
             console.log(err.message);
-            throw err;
+            return;
         }
 
-        console.log('Filter data: ' + data.toString());
-
-        let ramData = getRamData(req.body.ramScore, data.max_speed, data.min_speed);
+        console.log('Filter data:', data);
+        let ramSpeed = getRamSpeed(req.body.ramScore, data.max_speed, data.min_speed);
+        console.log('Ram capacity', ramCapacity);
+        console.log('Ram speed:', ramSpeed);
+        
         let values = [
             req.body.budget,
             req.body.cpuScore,
-            ramData.capacity,
-            ramData.speed,
+            ramCapacity,
+            ramSpeed,
             req.body.storage,
             req.body.battery
         ];
@@ -65,29 +76,23 @@ app.put('/suggestion', function(req, res) {
             `SELECT * FROM laptop l
                JOIN cpu c ON l.cpu_id = c.cpu_id
                JOIN ram r ON l.ram_id = r.ram_id
-              WHERE price < ?
-                AND score > ? * (SELECT MAX(score) FROM cpu) / 10
-                AND capacity > ?
-                AND speed > ?
-                AND storage > 100 * ?
-                AND battery > ?
+              WHERE price <= ?
+                AND score >= ? * (SELECT MAX(score) FROM cpu) / 10
+                AND capacity >= ?
+                AND speed >= ?
+                AND storage >= 100 * ?
+                AND battery >= ?
              ORDER BY price`;
 
         db.get(sql, values, (err, recommendation) => {
             if (err) {
                 console.log(err.message);
-                throw err;
+                return;
             }
-
-            res.status(200).send(recommendation);
+            console.log(recommendation);
+            res.status(200).json(recommendation);
         });
     });
-
-
-
-
-
-
 
     db.close((err) => {
         if (err) {
@@ -113,39 +118,39 @@ app.get('/admin', function(req, res) {
     res.sendFile('public/admin.html', { root: __dirname });
 });
 
-app.post('/admin/sql', function(req, res) {
-    console.info(new Date().toLocaleString() + " - POST /admin/sql");
-    let sql = req.body.sql_statement;
+// app.post('/admin/sql', function(req, res) {
+//     console.info(new Date().toLocaleString() + " - POST /admin/sql");
+//     let sql = req.body.sql_statement;
 
-    if (sql.toLowerCase().includes('delete') || sql.toLowerCase().includes('insert')) {
-        res.status(400).send('DELETE and INSERT statements not allowed through this endpoint.');
-        console.log("ERROR: Attempted to DELETE/INSERT at /admin/sql: '" + sql + "'");
-        return;
-    }
+//     if (sql.toLowerCase().includes('delete') || sql.toLowerCase().includes('insert')) {
+//         res.status(400).send('DELETE and INSERT statements not allowed through this endpoint.');
+//         console.log("ERROR: Attempted to DELETE/INSERT at /admin/sql: '" + sql + "'");
+//         return;
+//     }
 
-    let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
-        if (err) {
-            res.status(500).send(err.message);
-        }
-        console.log("Connected to laptop database.");
-    });
+//     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
+//         if (err) {
+//             res.status(500).send(err.message);
+//         }
+//         console.log("Connected to laptop database.");
+//     });
 
-    // Retrieve database items
-    laptopDB.all(sql, (err, rows) => {
-        if (err) {
-            res.status(500).send(err.message);
-        }
-        console.log(rows);
-        res.status(200).send(rows);
-    });
+//     // Retrieve database items
+//     laptopDB.all(sql, (err, rows) => {
+//         if (err) {
+//             res.status(500).send(err.message);
+//         }
+//         console.log(rows);
+//         res.status(200).send(rows);
+//     });
 
-    laptopDB.close((err) => {
-        if (err) {
-            res.status(500).send(err.message);
-        }
-        console.log("Closed the connection to laptop database.");
-    });
-});
+//     laptopDB.close((err) => {
+//         if (err) {
+//             res.status(500).send(err.message);
+//         }
+//         console.log("Closed the connection to laptop database.");
+//     });
+// });
 
 
 
@@ -429,31 +434,23 @@ app.listen(PORT_NUMBER, function() {
 
 
 
-function getRamData(ramScore, maxSpeed, minSpeed) {
-    let ramCapacity = 0;
+function getRamSpeed(ramScore, maxSpeed, minSpeed) {
     let ramSpeed = 0;
     let ramSpeedDelta = maxSpeed - minSpeed;
     if (ramScore < 4) {
-        ramCapacity = 4;
         ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 1) / 3);
     }
     else if (ramScore < 7) {
-        ramCapacity = 8;
         ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 4) / 3);
     }
     else if (ramScore < 9) {
-        ramCapacity = 16;
         ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 7) / 2);
     }
     else {
-        ramCapacity = 32;
         ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 9) / 2);
     }
 
-    return {
-        'capacity': ramCapacity,
-        'speed': ramSpeed
-    };
+    return ramSpeed;
 }
 
 /**
