@@ -30,26 +30,42 @@ var ramReady = false;
 var batteryReady = false;
 var storageReady = false;
 
-function chooseBest(userPref) {
+class UserChoice {
+  constructor(spec, num) {
+    this._spec = spec;
+    this._num = num;
+  }
+
+  get spec() {
+    return this._spec;
+  }
+
+  set spec(spec) {
+    this._spec = spec;
+  }
+
+  get num() {
+    return this._num;
+  }
+
+  set num(num) {
+    this._num = num;
+  }
+}
+
+// uses the user scores to select the best fit laptop to give a recommendation
+function chooseBestLaptop(userPref) {
   selectByMax(CPU, SCORE, userPref.cpuScore);
   let ramScore = userPref.ramScore;
   let ramStmt = makeRamSelectStmt(ramScore);
   selectRam(ramStmt);
   selectByMax(LAPTOP, BATTERY, userPref.battery);
   selectByMax(LAPTOP, STORAGE, userPref.storage);
-
-
-  // SELECT DISTINCT * FROM batteryView
-  // JOIN ramView ON batteryView.ram_id = ramView.ram_id
-  // JOIN cpuView ON batteryView.cpu_id = cpuView.cpu_id
-  // JOIN storageView ON batteryView.model = storageView.model
-  // GROUP BY model
-
-  // return best laptop
 }
 
-function dropViews() {
-  // open database in memory
+// selects only laptops that are at least as good as the user score indicates
+// and creates a view to hold the results
+function selectByMax(table, col, rating) {
   let db = new sqlite.Database(DB_FILE_NAME, (err) => {
     if (err) {
       return console.error(err.message);
@@ -57,32 +73,55 @@ function dropViews() {
     console.log('Connected to database.');
   });
 
-  db.run(`DROP VIEW IF EXISTS best${RAM}`, [], (err, row) => {
+  let sql = `SELECT MAX(${col}) max FROM ${table}`;
+
+  db.get(sql, [], (err, row) => {
     if (err) {
       throw err;
     }
-    console.log("Dropped ram view.");
-  });
-  db.run(`DROP VIEW IF EXISTS best${STORAGE}`, [], (err, row) => {
-    if (err) {
-      throw err;
-    }
-    console.log("Dropped storage view.");
-  });
-  db.run(`DROP VIEW IF EXISTS best${BATTERY}`, [], (err, row) => {
-    if (err) {
-      throw err;
-    }
-    console.log("Dropped battery view.");
-  });
-  db.run(`DROP VIEW IF EXISTS best${SCORE}`, [], (err, row) => {
-    if (err) {
-      throw err;
-    }
-    console.log("Dropped cpu view.");
+    let lowerBound = row.max * rating / 10;
+    selectBestFit(table, col, lowerBound);
   });
 
-  // close the database connection
+  db.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Close the database connection.');
+  });
+
+}
+
+// selects the best cpu, battery, and storage choices based on the user score
+// makes recommendation once all the choices have been narrowed down
+function selectBestFit(table, col, lowerBound) {
+  let sql = `CREATE VIEW [best${col}] AS SELECT DISTINCT * FROM ${table} WHERE ${col} >=  ${lowerBound}`;
+
+  let db = new sqlite.Database(DB_FILE_NAME, (err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Connected to database.');
+  });
+
+  db.all(sql, [], (err, rows) => {
+    if (err) {
+      throw err;
+    }
+
+    if (table == CPU) {
+      cpuReady = true;
+    } else if (col == BATTERY) {
+      batteryReady = true;
+    } else if (col == STORAGE) {
+      storageReady = true;
+    }
+
+    if (cpuReady && ramReady && batteryReady && storageReady) {
+      makeRecommendation(userPref);
+    }
+  });
+
   db.close((err) => {
     if (err) {
       return console.error(err.message);
@@ -91,8 +130,8 @@ function dropViews() {
   });
 }
 
+// selects the best ram configurations based on the user score
 function selectRam(stmt) {
-  // open database in memory
   let db = new sqlite.Database(DB_FILE_NAME, (err) => {
     if (err) {
       return console.error(err.message);
@@ -100,16 +139,14 @@ function selectRam(stmt) {
     console.log('Connected to database.');
   });
 
-  db.get(stmt, [], (err, row) => {
+  db.all(stmt, [], (err, rows) => {
     if (err) {
       throw err;
     }
 
-    bestRam = row;
     ramReady = true;
   });
 
-  // close the database connection
   db.close((err) => {
     if (err) {
       return console.error(err.message);
@@ -119,6 +156,7 @@ function selectRam(stmt) {
 
 }
 
+// make SQL statement to select the ram configurations for the user score
 function makeRamSelectStmt(ramScore) {
   let ramView = "[bestram]";
   if (ramScore == 1) {
@@ -156,10 +194,9 @@ function makeRamSelectStmt(ramScore) {
   }
 }
 
-function selectBestFit(table, col, lowerBound) {
-  let sql = `CREATE VIEW [best${col}] AS SELECT DISTINCT * FROM ${table} WHERE ${col} >=  ${lowerBound}`;
-
-  // open database in memory
+// drop the views from the database that were created as part of the recommendation
+// process
+function dropViews() {
   let db = new sqlite.Database(DB_FILE_NAME, (err) => {
     if (err) {
       return console.error(err.message);
@@ -167,32 +204,31 @@ function selectBestFit(table, col, lowerBound) {
     console.log('Connected to database.');
   });
 
-  db.all(sql, [], (err, rows) => {
+  db.run(`DROP VIEW IF EXISTS best${RAM}`, [], (err, row) => {
     if (err) {
       throw err;
     }
-
-    if (table == CPU) {
-      cpuReady = true;
-    } else if (col == BATTERY) {
-      batteryReady = true;
-    } else if (col == STORAGE) {
-      storageReady = true;
+    console.log("Dropped ram view.");
+  });
+  db.run(`DROP VIEW IF EXISTS best${STORAGE}`, [], (err, row) => {
+    if (err) {
+      throw err;
     }
-    console.log(`${col}: `);
-    console.log(rows);
-
-    if (cpuReady && ramReady && batteryReady && storageReady) {
-      // TODO: join the views based on ram and cpu id's
-      // keep track of which joins gave non-zero results
-      // do all the joins
-      // work backwards from the last result to the first, returning the first
-      // legitimate result
-      dropViews();
+    console.log("Dropped storage view.");
+  });
+  db.run(`DROP VIEW IF EXISTS best${BATTERY}`, [], (err, row) => {
+    if (err) {
+      throw err;
     }
+    console.log("Dropped battery view.");
+  });
+  db.run(`DROP VIEW IF EXISTS best${SCORE}`, [], (err, row) => {
+    if (err) {
+      throw err;
+    }
+    console.log("Dropped cpu view.");
   });
 
-  // close the database connection
   db.close((err) => {
     if (err) {
       return console.error(err.message);
@@ -201,40 +237,100 @@ function selectBestFit(table, col, lowerBound) {
   });
 }
 
-function selectByMax(table, col, rating) {
-  // open database in memory
+// creates SQL statement to join all the views representing the best
+// fit specifications to create a best fit laptop and then queries the database
+function makeRecommendation(userPref) {
+  let battery = new UserChoice(BATTERY, userPref.battery);
+  let storage = new UserChoice(STORAGE, userPref.storage);
+  let ramScore = new UserChoice(RAM, userPref.ramScore);
+  let cpuScore = new UserChoice(SCORE, userPref.cpuScore);
+  let scoring = [battery, storage, ramScore, cpuScore];
+  scoring.sort(function(a, b){return b.num - a.num});
+
+  let indices =  new Set();
+  let j = 0;
+  for (j = 0; j < scoring.length; j++) {
+    indices.add(j);
+  }
+
+  let i = 0;
+  while (scoring[i].spec != BATTERY && scoring[i].spec != STORAGE && i < scoring.length) {
+    i++;
+  }
+  let baseView = scoring[i].spec; // used in the SELECT clause
+  indices.delete(i);  // remove index of option used in SELECT clause
+
+  var sqlstmts = [];
+  let sql = `SELECT * FROM best${baseView} `;
+  sqlstmts.push(sql);
+  for (let k = 0; k < scoring.length; k++) {  // make JOIN statements for the rest of the parameters
+    if (indices.has(k)) {
+      sql += `JOIN best${scoring[k].spec} ON `;
+      if (scoring[k].spec == RAM) {
+        sql += `best${baseView}.ram_id = best${scoring[k].spec}.ram_id `;
+        if (sqlstmts.length != scoring.length - 1) {
+         sqlstmts.push(sql);
+        }
+      }
+      else if (scoring[k].spec == SCORE) {
+       sql += `best${baseView}.cpu_id = best${scoring[k].spec}.cpu_id `;
+       if (sqlstmts.length != scoring.length - 1) {
+         sqlstmts.push(sql);
+       }
+      }
+      else if (scoring[k].spec == STORAGE || scoring[k].spec == BATTERY) {
+       sql += `best${baseView}.model = best${scoring[k]._spec}.model `;
+       if (sqlstmts.length != scoring.length - 1) {
+         sqlstmts.push(sql);
+       }
+      }
+    }
+  }
+
+  getRecommendation(sql, sqlstmts);
+}
+
+// select the best laptop by joining the views containing the best ram, cpu, battery,
+// and storage configurations
+function getRecommendation(sql, sqlstmts) {
   let db = new sqlite.Database(DB_FILE_NAME, (err) => {
     if (err) {
       return console.error(err.message);
     }
     console.log('Connected to database.');
   });
-
-  let sql = `SELECT MAX(${col}) max FROM ${table}`;
 
   db.get(sql, [], (err, row) => {
     if (err) {
       throw err;
     }
-    let lowerBound = row.max * rating / 10;
-    selectBestFit(table, col, lowerBound);
+
+    if (typeof row == "undefined" && sqlstmts.length > 0) {
+      sql = sqlstmts[sqlstmts.length - 1];
+      sqlstmts.pop();
+      getRecommendation(sql, sqlstmts);
+    }
+    else {
+      console.log(row); // TODO: send this to the frontend
+      dropViews();
+    }
   });
 
-  // close the database connection
   db.close((err) => {
     if (err) {
       return console.error(err.message);
     }
     console.log('Close the database connection.');
   });
-
 }
 
-let userPref = {
-  battery : 5,
-  storage : 5,
-  ramScore : 5,
-  cpuScore : 5
+// for testing
+var userPref = {
+  price: 1500,
+  battery : 4,
+  storage : 2,
+  ramScore : 8,
+  cpuScore : 9
 }
 
-chooseBest(userPref);
+chooseBestLaptop(userPref);
