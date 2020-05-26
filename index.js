@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const sorter = require('./public/sorter');
 
 const app = express();
 app.use(bodyParser.json());
@@ -25,6 +26,17 @@ app.get('/', function(req, res) {
     res.sendFile('public/index.html', { root: __dirname });
 });
 
+app.put('/suggestion', function(req, res) {
+    console.info(new Date().toLocaleString() + " - PUT /suggestion");
+    let laptopSuggestion = sorter.chooseLaptop(req.body);
+    console.log('app.put: suggestion: ' + laptopSuggestion);
+    res.status(200).send(laptopSuggestion);
+});
+
+
+
+
+
 app.get('/admin', function(req, res) {
     console.info(new Date().toLocaleString() + " - GET /admin");
     res.sendFile('public/admin.html', { root: __dirname });
@@ -33,13 +45,13 @@ app.get('/admin', function(req, res) {
 app.post('/admin/sql', function(req, res) {
     console.info(new Date().toLocaleString() + " - POST /admin/sql");
     let sql = req.body.sql_statement;
-    
+
     if (sql.toLowerCase().includes('delete') || sql.toLowerCase().includes('insert')) {
         res.status(400).send('DELETE and INSERT statements not allowed through this endpoint.');
         console.log("ERROR: Attempted to DELETE/INSERT at /admin/sql: '" + sql + "'");
         return;
     }
-    
+
     let laptopDB = new sqlite.Database(DB_FILE_NAME, (err) => {
         if (err) {
             res.status(500).send(err.message);
@@ -62,9 +74,11 @@ app.post('/admin/sql', function(req, res) {
         }
         console.log("Closed the connection to laptop database.");
     });
-})
+});
 
-// app.get('/suggestion')
+
+
+
 
 app.get('/laptop', function(req, res) {
     console.info(new Date().toLocaleString() + " - GET /laptop");
