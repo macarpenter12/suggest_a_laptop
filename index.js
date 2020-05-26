@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const sorter = require('./public/sorter');
+// const sorter = require('./public/sorter');   INCLUDE /suggestion CODE IF UNCOMMENTED
 
 const app = express();
 app.use(bodyParser.json());
@@ -28,9 +28,80 @@ app.get('/', function(req, res) {
 
 app.put('/suggestion', function(req, res) {
     console.info(new Date().toLocaleString() + " - PUT /suggestion");
-    let laptopSuggestion = sorter.chooseLaptop(req.body);
-    console.log('app.put: suggestion: ' + laptopSuggestion);
-    res.status(200).send(laptopSuggestion);
+    console.info('Generating suggestion...');
+
+    let sql =
+        `SELECT MAX(score) max_score, MAX(speed) max_speed, MIN(speed) min_speed
+           FROM cpu
+           JOIN ram`;
+
+    let db = new sqlite.Database(DB_FILE_NAME, (err) => {
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+        console.log('Connected to database');
+    });
+
+    db.get(sql, (err, data) => {
+        if (err) {
+            console.log(err.message);
+            throw err;
+        }
+
+        console.log('Filter data: ' + data.toString());
+
+        let ramData = getRamData(req.body.ramScore, data.max_speed, data.min_speed);
+        let values = [
+            req.body.budget,
+            req.body.cpuScore,
+            ramData.capacity,
+            ramData.speed,
+            req.body.storage,
+            req.body.battery
+        ];
+
+        sql =
+            `SELECT * FROM laptop l
+               JOIN cpu c ON l.cpu_id = c.cpu_id
+               JOIN ram r ON l.ram_id = r.ram_id
+              WHERE price < ?
+                AND score > ? * (SELECT MAX(score) FROM cpu) / 10
+                AND capacity > ?
+                AND speed > ?
+                AND storage > 100 * ?
+                AND battery > ?
+             ORDER BY price`;
+
+        db.get(sql, values, (err, recommendation) => {
+            if (err) {
+                console.log(err.message);
+                throw err;
+            }
+
+            res.status(200).send(recommendation);
+        });
+    });
+
+
+
+
+
+
+
+    db.close((err) => {
+        if (err) {
+            res.status(500).send(err.message);
+        }
+        console.log("Closed the connection to laptop database.");
+    });
+
+
+
+    /* FOR USE WITH [sorter.js] */
+    // let laptopSuggestion = sorter.chooseLaptop(req.body);
+    // console.log('app.put: suggestion: ' + laptopSuggestion);
+    // res.status(200).send(laptopSuggestion);
 });
 
 
@@ -221,12 +292,12 @@ app.put('/laptop', function(req, res, next) {
     // Get the request object
     console.info(new Date().toLocaleString() + " - PUT /laptop");
     console.log(req.body);
-    let model = req.body.model;
-    let price = req.body.price;
-    let cpuID = req.body.cpu_id;
-    let ramID = req.body.ram_id;
-    let storage = req.body.storage;
-    let battery = req.body.battery;
+    let model = String(req.body.model);
+    let price = Number(req.body.price);
+    let cpuID = String(req.body.cpu_id);
+    let ramID = String(req.body.ram_id);
+    let storage = Number(req.body.storage);
+    let battery = Number(req.body.battery);
 
     dbInsert(LAPTOP_TABLE, [model, price, cpuID, ramID, storage, battery]);
 
@@ -357,6 +428,33 @@ app.listen(PORT_NUMBER, function() {
 
 
 
+
+function getRamData(ramScore, maxSpeed, minSpeed) {
+    let ramCapacity = 0;
+    let ramSpeed = 0;
+    let ramSpeedDelta = maxSpeed - minSpeed;
+    if (ramScore < 4) {
+        ramCapacity = 4;
+        ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 1) / 3);
+    }
+    else if (ramScore < 7) {
+        ramCapacity = 8;
+        ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 4) / 3);
+    }
+    else if (ramScore < 9) {
+        ramCapacity = 16;
+        ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 7) / 2);
+    }
+    else {
+        ramCapacity = 32;
+        ramSpeed = minSpeed + (ramSpeedDelta * (ramScore - 9) / 2);
+    }
+
+    return {
+        'capacity': ramCapacity,
+        'speed': ramSpeed
+    };
+}
 
 /**
  * This function will insert the given set of attributes into the given table.
