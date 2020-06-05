@@ -16,9 +16,8 @@ mongoose.connect('mongodb://localhost:27017/suggest_a_laptop', {
 const laptopSchema = new mongoose.Schema({
     model: String,
     price: Number,
-    cpu_id: String,
     cpu_score: Number,
-    ram: Number,
+    ram_capacity: Number,
     storage: Number,
     battery: Number
 });
@@ -61,9 +60,8 @@ app.post('/laptop', async(req, res) => {
     const laptop = new Laptop({
        model: req.body.model,
        price: req.body.price,
-       cpu_id: req.body.cpu_id,
        cpu_score: req.body.cpu_score,
-       ram: req.body.ram_capacity,
+       ram_capacity: req.body.ram_capacity,
        storage: req.body.storage,
        battery: req.body.battery
     });
@@ -83,7 +81,7 @@ app.post('/laptop', async(req, res) => {
 app.delete('/laptop/:model', async(req, res) => {
    const laptop = new Laptop({
        model: req.params.model
-   }) ;
+   });
    try {
        await Laptop.deleteOne(laptop);
        res.send(`Successfully removed '${laptop}' from the database.`);
