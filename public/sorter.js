@@ -1,14 +1,11 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-
-const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-    extended: false
-}));
-app.use(express.static('public'));
+exports.chooseLaptop = function(userPref) {
+  chooseBestLaptop(userPref);
+  console.log('recommendation: ' + recommendation);
+  return recommendation;
+};
 
 const sqlite = require('sqlite3');
+
 const DB_FILE_NAME = "./db/laptops.db";
 const LAPTOP_TABLE = "laptop(model, price, cpu_id, ram_id, storage, battery)";
 const CPU_TABLE = "cpu(cpu_id, score)";
@@ -23,12 +20,13 @@ const SPEED = "speed";
 const RAMID = "ram_id";
 const CAPACITY = "capacity";
 
-const PORT_NUMBER = 3000;
-
 var cpuReady = false;
 var ramReady = false;
 var batteryReady = false;
 var storageReady = false;
+
+var recommendation = null;
+var globalUserPref = null;
 
 class UserChoice {
   constructor(spec, num) {
@@ -55,12 +53,16 @@ class UserChoice {
 
 // uses the user scores to select the best fit laptop to give a recommendation
 function chooseBestLaptop(userPref) {
+  console.log(userPref);
+  globalUserPref = userPref;
+  dropViews();
   selectByMax(CPU, SCORE, userPref.cpuScore);
   let ramScore = userPref.ramScore;
   let ramStmt = makeRamSelectStmt(ramScore);
   selectRam(ramStmt);
   selectByMax(LAPTOP, BATTERY, userPref.battery);
   selectByMax(LAPTOP, STORAGE, userPref.storage);
+  dropViews();
 }
 
 // selects only laptops that are at least as good as the user score indicates
@@ -77,6 +79,7 @@ function selectByMax(table, col, rating) {
 
   db.get(sql, [], (err, row) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
     let lowerBound = row.max * rating / 10;
@@ -106,19 +109,23 @@ function selectBestFit(table, col, lowerBound) {
 
   db.all(sql, [], (err, rows) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
 
     if (table == CPU) {
       cpuReady = true;
-    } else if (col == BATTERY) {
+    }
+    else if (col == BATTERY) {
       batteryReady = true;
-    } else if (col == STORAGE) {
+    }
+    else if (col == STORAGE) {
       storageReady = true;
     }
 
     if (cpuReady && ramReady && batteryReady && storageReady) {
-      makeRecommendation(userPref);
+      console.log('globalUserPref before makeRecommendation: ' + globalUserPref);
+      makeRecommendation(globalUserPref);
     }
   });
 
@@ -132,6 +139,7 @@ function selectBestFit(table, col, lowerBound) {
 
 // selects the best ram configurations based on the user score
 function selectRam(stmt) {
+  console.log(stmt);
   let db = new sqlite.Database(DB_FILE_NAME, (err) => {
     if (err) {
       return console.error(err.message);
@@ -141,6 +149,7 @@ function selectRam(stmt) {
 
   db.all(stmt, [], (err, rows) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
 
@@ -161,27 +170,27 @@ function makeRamSelectStmt(ramScore) {
   let ramView = "[bestram]";
   if (ramScore == 1) {
     return `CREATE VIEW ${ramView} AS SELECT ${RAMID}, ${CAPACITY}, MIN(${SPEED}) AS speed ` +
-    `FROM ${RAM} WHERE capacity = 4 GROUP BY ${RAMID}, ${CAPACITY}`;
+      `FROM ${RAM} WHERE capacity = 4 GROUP BY ${RAMID}, ${CAPACITY}`;
   }
   else if (ramScore == 3) {
     return `CREATE VIEW ${ramView} AS SELECT ${RAMID}, ${CAPACITY}, MAX(${SPEED}) AS speed ` +
-    `FROM ${RAM} WHERE capacity = 4 GROUP BY ${RAMID}, ${CAPACITY}`;
+      `FROM ${RAM} WHERE capacity = 4 GROUP BY ${RAMID}, ${CAPACITY}`;
   }
   else if (ramScore == 2) {
     return `CREATE VIEW ${ramView} AS SELECT ${RAMID}, ${CAPACITY}, AVG(${SPEED}) AS speed ` +
-    `FROM ${RAM} WHERE capacity = 4 GROUP BY ${RAMID}, ${CAPACITY}`;
+      `FROM ${RAM} WHERE capacity = 4 GROUP BY ${RAMID}, ${CAPACITY}`;
   }
   else if (ramScore == 4) {
     return `CREATE VIEW ${ramView} AS SELECT ${RAMID}, ${CAPACITY}, MIN(${SPEED}) AS speed ` +
-    `FROM ${RAM} WHERE capacity = 8 GROUP BY ${RAMID}, ${CAPACITY}`;
+      `FROM ${RAM} WHERE capacity = 8 GROUP BY ${RAMID}, ${CAPACITY}`;
   }
   else if (ramScore == 6) {
     return `CREATE VIEW ${ramView} AS SELECT ${RAMID}, ${CAPACITY}, MAX(${SPEED}) AS speed ` +
-    `FROM ${RAM} WHERE capacity = 8 GROUP BY ${RAMID}, ${CAPACITY}`;
+      `FROM ${RAM} WHERE capacity = 8 GROUP BY ${RAMID}, ${CAPACITY}`;
   }
   else if (ramScore == 5) {
     return `CREATE VIEW ${ramView} AS SELECT ${RAMID}, ${CAPACITY}, AVG(${SPEED}) AS speed ` +
-    `FROM ${RAM} WHERE capacity = 8 GROUP BY ${RAMID}, ${CAPACITY}`;
+      `FROM ${RAM} WHERE capacity = 8 GROUP BY ${RAMID}, ${CAPACITY}`;
   }
   else if (ramScore == 7) {
     return `CREATE VIEW ${ramView} AS SELECT * FROM ${RAM} WHERE capacity = 16 AND speed <= 2700`;
@@ -204,26 +213,36 @@ function dropViews() {
     console.log('Connected to database.');
   });
 
+  // db.run(`DROP VIEW IF EXISTS [bestram]`, [], (err, row) => {
+  //   if (err) {
+  //     throw err;
+  //   }
+  //   console.log("Dropped [bestram] view.");
+  // })
   db.run(`DROP VIEW IF EXISTS best${RAM}`, [], (err, row) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
     console.log("Dropped ram view.");
   });
   db.run(`DROP VIEW IF EXISTS best${STORAGE}`, [], (err, row) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
     console.log("Dropped storage view.");
   });
   db.run(`DROP VIEW IF EXISTS best${BATTERY}`, [], (err, row) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
     console.log("Dropped battery view.");
   });
   db.run(`DROP VIEW IF EXISTS best${SCORE}`, [], (err, row) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
     console.log("Dropped cpu view.");
@@ -245,9 +264,9 @@ function makeRecommendation(userPref) {
   let ramScore = new UserChoice(RAM, userPref.ramScore);
   let cpuScore = new UserChoice(SCORE, userPref.cpuScore);
   let scoring = [battery, storage, ramScore, cpuScore];
-  scoring.sort(function(a, b){return b.num - a.num});
+  scoring.sort(function(a, b) { return b.num - a.num });
 
-  let indices =  new Set();
+  let indices = new Set();
   let j = 0;
   for (j = 0; j < scoring.length; j++) {
     indices.add(j);
@@ -258,31 +277,31 @@ function makeRecommendation(userPref) {
     i++;
   }
   let baseView = scoring[i].spec; // used in the SELECT clause
-  indices.delete(i);  // remove index of option used in SELECT clause
+  indices.delete(i); // remove index of option used in SELECT clause
 
   var sqlstmts = [];
   let sql = `SELECT * FROM best${baseView} `;
   sqlstmts.push(sql);
-  for (let k = 0; k < scoring.length; k++) {  // make JOIN statements for the rest of the parameters
+  for (let k = 0; k < scoring.length; k++) { // make JOIN statements for the rest of the parameters
     if (indices.has(k)) {
       sql += `JOIN best${scoring[k].spec} ON `;
       if (scoring[k].spec == RAM) {
         sql += `best${baseView}.ram_id = best${scoring[k].spec}.ram_id `;
         if (sqlstmts.length != scoring.length - 1) {
-         sqlstmts.push(sql);
+          sqlstmts.push(sql);
         }
       }
       else if (scoring[k].spec == SCORE) {
-       sql += `best${baseView}.cpu_id = best${scoring[k].spec}.cpu_id `;
-       if (sqlstmts.length != scoring.length - 1) {
-         sqlstmts.push(sql);
-       }
+        sql += `best${baseView}.cpu_id = best${scoring[k].spec}.cpu_id `;
+        if (sqlstmts.length != scoring.length - 1) {
+          sqlstmts.push(sql);
+        }
       }
       else if (scoring[k].spec == STORAGE || scoring[k].spec == BATTERY) {
-       sql += `best${baseView}.model = best${scoring[k]._spec}.model `;
-       if (sqlstmts.length != scoring.length - 1) {
-         sqlstmts.push(sql);
-       }
+        sql += `best${baseView}.model = best${scoring[k]._spec}.model `;
+        if (sqlstmts.length != scoring.length - 1) {
+          sqlstmts.push(sql);
+        }
       }
     }
   }
@@ -302,6 +321,7 @@ function getRecommendation(sql, sqlstmts) {
 
   db.get(sql, [], (err, row) => {
     if (err) {
+      console.log(new Error().stack);
       throw err;
     }
 
@@ -311,7 +331,8 @@ function getRecommendation(sql, sqlstmts) {
       getRecommendation(sql, sqlstmts);
     }
     else {
-      console.log(row); // TODO: send this to the frontend
+      console.log('row' + row);
+      recommendation = row;
       dropViews();
     }
   });
@@ -325,12 +346,12 @@ function getRecommendation(sql, sqlstmts) {
 }
 
 // for testing
-var userPref = {
-  price: 1500,
-  battery : 4,
-  storage : 2,
-  ramScore : 8,
-  cpuScore : 9
-}
+// var userPref = {
+//   price: 1500,
+//   battery : 4,
+//   storage : 2,
+//   ramScore : 8,
+//   cpuScore : 9
+// }
 
-chooseBestLaptop(userPref);
+// chooseBestLaptop(userPref);
