@@ -78,33 +78,38 @@ app.post('/suggestion', async(req, res) => {
     var oldResult = await budgetSelect(req.body.budget);
     var newResult;
 
+    if (oldResult.length < 1) {
+        res.send("Budget too low");
+    }
+    
+    var errorArray = [];
+    
     for (let i = 0; i < userScores.length; i++) {
         let nextScore = userScores[i];
         switch (nextScore.name) {
             case 'cpuScore':
                 newResult = await cpuSelect(oldResult, nextScore.score);
-                if (newResult.length < 1) {
-                    newResult = oldResult;
-                }
-                oldResult = newResult;
                 break;
             case "ramScore":
                 newResult = await ramSelect(oldResult, nextScore.score);
-                if (newResult.length < 1) {
-                    newResult = oldResult;
-                }
-                oldResult = newResult;
                 break;
-                // case "storageScore":
-                //     newResult = await storageSelect(nextScore.score);
-                //     break;
-                // case "battery":
-                //     newResult = await batterySelect(nextScore.score);
-                //     break;
+            case "storageScore":
+                newResult = await storageSelect(oldResult, nextScore.score);
+                break;
+            case "battery":
+                newResult = await batterySelect(oldResult, nextScore.score);
+                break;
         }
+        
+        if (newResult.length < 1) {
+            newResult = oldResult;
+            errorArray.push("We weren't able to find a laptop that met your requirements for " + nextScore.name);
+        }
+        
+        oldResult = newResult;
     }
     newResult = selectCheapest(newResult);
-    res.send(newResult);
+    res.send({result: newResult, errors: errorArray});
 });
 
 
