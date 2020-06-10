@@ -14,7 +14,7 @@ function getUserPref()
     // console.log("batteryValID = " + batValID.value);
     // console.log("budget = " + budgetID.value);
     
-    axios.put('/suggestion', {
+    axios.post('/suggestion', {
             budget: budgetID.value,
             cpuScore: cpuValID.value,
             ramScore: ramValID.value,

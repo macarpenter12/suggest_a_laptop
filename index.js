@@ -95,12 +95,12 @@ app.post('/suggestion', async(req, res) => {
                 }
                 oldResult = newResult;
                 break;
-            // case "storageScore":
-            //     newResult = await storageSelect(nextScore.score);
-            //     break;
-            // case "battery":
-            //     newResult = await batterySelect(nextScore.score);
-            //     break;
+                // case "storageScore":
+                //     newResult = await storageSelect(nextScore.score);
+                //     break;
+                // case "battery":
+                //     newResult = await batterySelect(nextScore.score);
+                //     break;
         }
     }
     newResult = selectCheapest(newResult);
@@ -173,32 +173,37 @@ function cpuSelect(laptopSet, userScore) {
 
 function ramSelect(laptopSet, userScore) {
     var minRam;
-  if (userScore < 4) {
-      minRam = 4;
-  } else if (userScore < 7) {
-      minRam = 8;
-  } else {
-      minRam = 16
-  }
+    if (userScore < 4) {
+        minRam = 4;
+    }
+    else if (userScore < 7) {
+        minRam = 8;
+    }
+    else {
+        minRam = 16
+    }
 
-  let resultSet = [];
-  laptoSet.forEach(function(item, index) {
-      if (item.ram_capacity >= minRam) {
-          resultSet.push(item);
-      }
-  });
-  return resultSet;
+    let resultSet = [];
+    laptopSet.forEach(function(item, index) {
+        if (item.ram_capacity >= minRam) {
+            resultSet.push(item);
+        }
+    });
+    return resultSet;
 }
 
 function storageSelect(laptopSet, userScore) {
     var minStorage;
     if (userScore < 4) {
         minStorage = 120;
-    } else if (userScore < 6) {
+    }
+    else if (userScore < 6) {
         minStorage = 240;
-    } else if (userScore < 9) {
+    }
+    else if (userScore < 9) {
         minStorage = 480;
-    } else {
+    }
+    else {
         minStorage = 960;
     }
 
