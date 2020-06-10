@@ -74,7 +74,7 @@ app.post('/suggestion', async(req, res) => {
     ];
 
     userScores = userScores.sort(function(a, b) { return b.score - a.score });
-    
+
     var oldResult = await budgetSelect(req.body.budget);
     var newResult;
 
@@ -88,9 +88,13 @@ app.post('/suggestion', async(req, res) => {
                 }
                 oldResult = newResult;
                 break;
-            // case "ramScore":
-            //     newResult = await ramSelect(nextScore.score);
-            //     break;
+            case "ramScore":
+                newResult = await ramSelect(oldResult, nextScore.score);
+                if (newResult.length < 1) {
+                    newResult = oldResult;
+                }
+                oldResult = newResult;
+                break;
             // case "storageScore":
             //     newResult = await storageSelect(nextScore.score);
             //     break;
@@ -156,7 +160,7 @@ async function budgetSelect(userBudget) {
     return suggestions;
 }
 
-async function cpuSelect(laptopSet, userScore) {
+function cpuSelect(laptopSet, userScore) {
     let minScore = userScore * 800;
     let resultSet = [];
     laptopSet.forEach(function(item, index) {
@@ -167,16 +171,54 @@ async function cpuSelect(laptopSet, userScore) {
     return resultSet;
 }
 
-function ramSelect(userScore) {
+function ramSelect(laptopSet, userScore) {
+    var minRam;
+  if (userScore < 4) {
+      minRam = 4;
+  } else if (userScore < 7) {
+      minRam = 8;
+  } else {
+      minRam = 16
+  }
 
+  let resultSet = [];
+  laptoSet.forEach(function(item, index) {
+      if (item.ram_capacity >= minRam) {
+          resultSet.push(item);
+      }
+  });
+  return resultSet;
 }
 
-function storageSelect(userScore) {
+function storageSelect(laptopSet, userScore) {
+    var minStorage;
+    if (userScore < 4) {
+        minStorage = 120;
+    } else if (userScore < 6) {
+        minStorage = 240;
+    } else if (userScore < 9) {
+        minStorage = 480;
+    } else {
+        minStorage = 960;
+    }
 
+    let resultSet = [];
+    laptopSet.forEach(function(item, index) {
+        if (item.storage >= minStorage) {
+            resultSet.push(item);
+        }
+    });
+    return resultSet;
 }
 
-function batterySelect(userScore) {
-
+function batterySelect(laptopSet, userScore) {
+    let resultSet = [];
+    laptopSet.forEach(function(item, index) {
+        if (item.battery >= userScore) {
+            resultSet.push(item);
+        }
+    });
+    return resultSet;
 }
 
 function selectCheapest(laptops) {
