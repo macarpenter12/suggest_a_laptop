@@ -8,8 +8,9 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(express.static('public'));
 
+const DB_ADDRESS = 'mongodb://localhost:27017/suggest_a_laptop';
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/suggest_a_laptop', {
+mongoose.connect(DB_ADDRESS, {
     useNewUrlParser: true
 });
 
@@ -24,24 +25,23 @@ const laptopSchema = new mongoose.Schema({
 const Laptop = mongoose.model('Laptop', laptopSchema);
 
 const PORT_NUMBER = 3000;
-const VIEW_NAME = 'suggestion_view';
 
 
 
 
 
 app.get('/', async(req, res) => {
-    console.info(new Date().toLocaleString() + " - GET /");
+    console.info(new Date().toLocaleString() + ' - GET /');
     res.sendFile('public/index.html', { root: __dirname });
 });
 
 app.get('/admin', async(req, res) => {
-    console.info(new Date().toLocaleString() + " - GET /admin");
+    console.info(new Date().toLocaleString() + ' - GET /admin');
     res.sendFile('public/admin.html', { root: __dirname });
 });
 
 app.get('/laptop', async(req, res) => {
-    console.info(new Date().toLocaleString() + " - GET /laptop");
+    console.info(new Date().toLocaleString() + ' - GET /laptop');
     try {
         let laptops = await Laptop.find();
         res.send(laptops);
@@ -55,56 +55,58 @@ app.get('/laptop', async(req, res) => {
 
 
 app.post('/suggestion', async(req, res) => {
-    let userScores = [
-        {
-            "name": "cpuScore",
-            "score": req.body.cpuScore
+    let userScores = [{
+            'name': 'cpuScore',
+            'score': req.body.cpuScore
         },
         {
-            "name": "ramScore",
-            "score": req.body.ramScore
+            'name': 'ramScore',
+            'score': req.body.ramScore
         },
         {
-            "name": "storageScore",
-            "score": req.body.storage
+            'name': 'storageScore',
+            'score': req.body.storage
         },
         {
-            "name": "battery",
-            "score": req.body.battery
+            'name': 'battery',
+            'score': req.body.battery
         }
     ];
-    
+
     userScores = userScores.sort(function(a, b) { return b.score - a.score });
-    res.send(userScores);
     
+    var oldResult = await budgetSelect(req.body.budget);
+    var newResult;
+
     for (let i = 0; i < userScores.length; i++) {
         let nextScore = userScores[i];
-        var oldResult;
-        var newResult;
-        switch (nextScore) {
-            case "cpuScore":
-                newResult = await cpuSelect(nextScore.score);
-                // if newResult is empty...
-                // send back oldResult
+        switch (nextScore.name) {
+            case 'cpuScore':
+                newResult = await cpuSelect(oldResult, nextScore.score);
+                if (newResult.length < 1) {
+                    newResult = oldResult;
+                }
+                oldResult = newResult;
                 break;
-            case "ramScore":
-                newResult = await ramSelect(nextScore.score);
-                break;
-            case "storageScore":
-                newResult = await storageSelect(nextScore.score);
-                break;
-            case "battery":
-                newResult = await batterySelect(nextScore.score);
-                break;
+            // case "ramScore":
+            //     newResult = await ramSelect(nextScore.score);
+            //     break;
+            // case "storageScore":
+            //     newResult = await storageSelect(nextScore.score);
+            //     break;
+            // case "battery":
+            //     newResult = await batterySelect(nextScore.score);
+            //     break;
         }
-        oldResult = newResult;
     }
+    newResult = selectCheapest(newResult);
+    res.send(newResult);
 });
 
 
 
 app.post('/laptop', async(req, res) => {
-    console.info(new Date().toLocaleString() + " - PUT /laptop");
+    console.info(new Date().toLocaleString() + ' - PUT /laptop');
 
     const laptop = new Laptop({
         model: req.body.model,
@@ -147,20 +149,42 @@ app.listen(PORT_NUMBER, function() {
 });
 
 
+async function budgetSelect(userBudget) {
+    let suggestions = await Laptop.find({
+        price: { $lt: userBudget }
+    });
+    return suggestions;
+}
 
-
-async function cpuSelect(userScore) {
-    
+async function cpuSelect(laptopSet, userScore) {
+    let minScore = userScore * 800;
+    let resultSet = [];
+    laptopSet.forEach(function(item, index) {
+        if (item.cpu_score >= minScore) {
+            resultSet.push(item);
+        }
+    });
+    return resultSet;
 }
 
 function ramSelect(userScore) {
-    
+
 }
 
 function storageSelect(userScore) {
-    
+
 }
 
 function batterySelect(userScore) {
-    
+
+}
+
+function selectCheapest(laptops) {
+    let min = laptops[0];
+    laptops.forEach(function(item, index) {
+        if (item.price < min.price) {
+            min = item;
+        }
+    });
+    return min;
 }
