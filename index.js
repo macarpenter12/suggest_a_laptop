@@ -77,12 +77,14 @@ app.post('/suggestion', async(req, res) => {
 
     var oldResult = await budgetSelect(req.body.budget);
     var newResult;
-
-    if (oldResult.length < 1) {
-        res.send("Budget too low");
-    }
     
     var errorArray = [];
+
+    if (oldResult.length < 1) {
+        errorArray.push('Budget too low');
+        res.send({errors: errorArray});
+        return;
+    }
     
     for (let i = 0; i < userScores.length; i++) {
         let nextScore = userScores[i];
@@ -185,7 +187,7 @@ function ramSelect(laptopSet, userScore) {
         minRam = 8;
     }
     else {
-        minRam = 16
+        minRam = 16;
     }
 
     let resultSet = [];
