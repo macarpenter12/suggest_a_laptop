@@ -263,6 +263,7 @@ function makeRecommendation(userPref) {
   let storage = new UserChoice(STORAGE, userPref.storage);
   let ramScore = new UserChoice(RAM, userPref.ramScore);
   let cpuScore = new UserChoice(SCORE, userPref.cpuScore);
+  
   let scoring = [battery, storage, ramScore, cpuScore];
   scoring.sort(function(a, b) { return b.num - a.num });
 

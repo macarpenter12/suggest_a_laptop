@@ -9,12 +9,9 @@ function getUserPref()
     var storValID = document.getElementById("storageVal");
     var recommendation = document.getElementById("recommendation");
    
-    // console.log("cpuValID = " + cpuValID.value);
-    // console.log("ramValID = " + ramValID.value);
-    // console.log("batteryValID = " + batValID.value);
-    // console.log("budget = " + budgetID.value);
+    recommendation.innerHTML = "";
     
-    axios.put('/suggestion', {
+    axios.post('/suggestion', {
             budget: budgetID.value,
             cpuScore: cpuValID.value,
             ramScore: ramValID.value,
@@ -23,13 +20,19 @@ function getUserPref()
         })
         .then(function(res) {
             console.log('response:', res.data);
-            let resLaptop = res.data;
-            recommendation.innerHTML = 
+            let resLaptop = res.data.result;
+            let errorMessages = res.data.errors;
+            
+            errorMessages.forEach(function(item, index) {
+                recommendation.innerHTML += item + '<br>';
+            });
+            
+            recommendation.innerHTML += 
             `<h1>${resLaptop.model}</h1>
             <ul>
                 <li>$${resLaptop.price}</li>
-                <li>${resLaptop.score} CPU score index <a href="https://www.cpubenchmark.net/">(Passmark)</a></li>
-                <li>${resLaptop.capacity} GB of memory at ${resLaptop.speed} MHz</li>
+                <li>${resLaptop.cpu_score} CPU score index <a href="https://www.cpubenchmark.net/">(Passmark)</a></li>
+                <li>${resLaptop.ram_capacity} GB of memory</li>
                 <li>${resLaptop.storage} GB of storage space</li>
                 <li>${resLaptop.battery} hours of battery life</li>
             </ul>
