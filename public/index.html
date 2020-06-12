@@ -2,84 +2,153 @@
 
 <head>
     <title>Suggest a Laptop</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
 </head>
 
-<body>
-    <h1>Suggest A Laptop</h1>
-    <h1>Rate importance of each feature from 1-10</h1>
+<body class="site">
+    <header>
+        <h1>Suggest A Laptop</h1>
+        <h1>Rate importance of each feature from 1-10</h1>
+    </header>
 
-    <form>
+    <main class="site-content">
+        <div id="app" class="column-content">
+            <div class="userPrefs">
+                <div class="userPrefsInput">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                Budget:
+                            </div>
 
-        <label for="budget">Budget:</label><br>
-        <input type="text" id="budget" name="budget"><br>
+                            <div class="col">
+                                <input v-model="userBudget">
+                            </div>
 
-        <label for="batteryVal">Battery Life:</label>
-        <select id="batteryVal">
-        <option value=1 >1</option>
-        <option value=2 >2</option>
-        <option value=3 >3</option>
-        <option value=4 >4</option>
-        <option value=5 >5</option>
-        <option value=6 >6</option>
-        <option value=7 >7</option>
-        <option value=8 >8</option>
-        <option value=9 >9</option>
-        <option value=10 >10</option>
-    </select><br>
+                            <div class="col">
+                                <!-- EMPTY COLUMN FOR SPACING -->
+                            </div>
+                        </div>
 
-        <label for="cpuVal">CPU:</label>
-        <select id="cpuVal">
-            <option value=1 >1</option>
-            <option value=2 >2</option>
-            <option value=3 >3</option>
-            <option value=4 >4</option>
-            <option value=5 >5</option>
-            <option value=6 >6</option>
-            <option value=7 >7</option>
-            <option value=8 >8</option>
-            <option value=9 >9</option>
-            <option value=10 >10</option>
-        </select><br>
+                        <div class="row">
+                            <div class="col">
+                                CPU:
+                            </div>
 
-        <label for="ramVal">RAM:</label>
-        <select id="ramVal">
-            <option value=1 >1</option>
-            <option value=2 >2</option>
-            <option value=3 >3</option>
-            <option value=4 >4</option>
-            <option value=5 >5</option>
-            <option value=6 >6</option>
-            <option value=7 >7</option>
-            <option value=8 >8</option>
-            <option value=9 >9</option>
-            <option value=10 >10</option>
-        </select><br>
+                            <div class="col">
+                                <select v-model="userCpuScore">
+                                <option value=1 >1</option>
+                                <option value=2 >2</option>
+                                <option value=3 >3</option>
+                                <option value=4 >4</option>
+                                <option value=5 >5</option>
+                                <option value=6 >6</option>
+                                <option value=7 >7</option>
+                                <option value=8 >8</option>
+                                <option value=9 >9</option>
+                                <option value=10 >10</option>
+                            </select>
+                            </div>
 
-        <label for="storageVal">Storage:</label>
-        <select id="storageVal">
-            <option value=1 >1</option>
-            <option value=2 >2</option>
-            <option value=3 >3</option>
-            <option value=4 >4</option>
-            <option value=5 >5</option>
-            <option value=6 >6</option>
-            <option value=7 >7</option>
-            <option value=8 >8</option>
-            <option value=9 >9</option>
-            <option value=10 >10</option>
-        </select><br>
+                            <div class="col">
+                                <!-- EMPTY COLUMN FOR SPACING -->
+                            </div>
+                        </div>
 
-    </form>
+                        <div class="row">
+                            <div class="col">
+                                Memory:
+                            </div>
 
-    <button onclick="getUserPref()">Get laptop suggestion</button>
-    
-    <div id="recommendation">
-        
+                            <div class="col">
+                                <select v-model="userRamScore">
+                                <option value=1 >1</option>
+                                <option value=2 >2</option>
+                                <option value=3 >3</option>
+                                <option value=4 >4</option>
+                                <option value=5 >5</option>
+                                <option value=6 >6</option>
+                                <option value=7 >7</option>
+                                <option value=8 >8</option>
+                                <option value=9 >9</option>
+                                <option value=10 >10</option>
+                            </select>
+                            </div>
+
+                            <div class="col">
+                                <!-- EMPTY COLUMN FOR SPACING -->
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                Storage:
+                            </div>
+
+                            <div class="col">
+                                <select v-model="userStorageScore">
+                                <option value=1 >1</option>
+                                <option value=2 >2</option>
+                                <option value=3 >3</option>
+                                <option value=4 >4</option>
+                                <option value=5 >5</option>
+                                <option value=6 >6</option>
+                                <option value=7 >7</option>
+                                <option value=8 >8</option>
+                                <option value=9 >9</option>
+                                <option value=10 >10</option>
+                            </select>
+                            </div>
+
+                            <div class="col">
+                                <!-- EMPTY COLUMN FOR SPACING -->
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col">
+                                Battery Life:
+                            </div>
+
+                            <div class="col">
+                                <select v-model="userBatteryScore">
+                                <option value=1 >1</option>
+                                <option value=2 >2</option>
+                                <option value=3 >3</option>
+                                <option value=4 >4</option>
+                                <option value=5 >5</option>
+                                <option value=6 >6</option>
+                                <option value=7 >7</option>
+                                <option value=8 >8</option>
+                                <option value=9 >9</option>
+                                <option value=10 >10</option>
+                            </select>
+                            </div>
+
+                            <div class="col">
+                                <!-- EMPTY COLUMN FOR SPACING -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button @click="getUserPref">Submit preferences</button>
+            </div>
+            
+            <div class="recommendation">
+                
+            </div>
+        </div>
+    </main>
+
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js" integrity="sha256-mpnrJ5DpEZZkwkE1ZgkEQQJW/46CSEh/STrZKOB/qoM=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="app.js"></script>
 </body>
 

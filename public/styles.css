@@ -1,31 +1,76 @@
 body {
     font-family: 'Montserrat', sans-serif;
-    font-size: 16px;
+    font-size: 18px;
     background: #fff;
     padding: 0px;
     margin: 0px;
 }
 
-button {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
+h2 {
+    margin: 8px;
 }
 
-.content-body {
-    margin: 50px;
+p {
+    margin: 8px;
 }
 
-.column {
-    float: left;
-    width: 200px;
+.row {
+    margin-bottom: 8px;
 }
 
-.scrollbox {
-    width: 400px;
-    height: 100px;
-    overflow: scroll;
+
+
+/* Header */
+
+header {
+    display: flex;
+    padding: 20px 100px 0px 100px;
+    background-color: #232f3e;
+    color: #ffff;
 }
 
-table {
-    text-align: center;
+.title {
+    margin-top: 10px;
+}
+
+.title h1,
+.title h2 {
+    margin: 0px;
+}
+
+.title h1 {
+    border-top: 1px solid #000;
+}
+
+
+
+/* Content */
+
+.site {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.site-content {
+    padding: 20px 100px 0px 100px;
+    flex: 1;
+}
+
+.column-content {
+    margin: 20px 50px 70px 100px;
+    flex: 1;
+}
+
+.content {
+    margin: 20px 50px 70px 50px;
+    display: flex;
+}
+
+.userPrefs {
+    width: 40%;
+}
+
+.userPrefsInput {
+    margin-bottom: 24px;
 }
