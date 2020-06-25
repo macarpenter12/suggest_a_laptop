@@ -10,35 +10,30 @@
 <body class="site">
     <header>
         <h1>Suggest A Laptop</h1>
-        <h1>Rate importance of each feature from 1-10</h1>
     </header>
 
     <main class="site-content">
+        <h2>Rate importance of each feature from 1-10</h2>
         <div id="app" class="column-content">
             <div class="userPrefs">
                 <div class="userPrefsInput">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col">
-                                Budget:
-                            </div>
-
-                            <div class="col">
-                                <input v-model="userBudget">
-                            </div>
-
-                            <div class="col">
-                                <!-- EMPTY COLUMN FOR SPACING -->
-                            </div>
+                    <div class="row">
+                        <div class="col">
+                            Budget:
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                CPU:
-                            </div>
+                        <div class="col">
+                            <input v-model="userBudget">
+                        </div>
+                    </div>
 
-                            <div class="col">
-                                <select v-model="userCpuScore">
+                    <div class="row">
+                        <div class="col">
+                            CPU:
+                        </div>
+
+                        <div class="col">
+                            <select v-model="userCpuScore">
                                 <option value=1 >1</option>
                                 <option value=2 >2</option>
                                 <option value=3 >3</option>
@@ -50,20 +45,16 @@
                                 <option value=9 >9</option>
                                 <option value=10 >10</option>
                             </select>
-                            </div>
+                        </div>
+                    </div>
 
-                            <div class="col">
-                                <!-- EMPTY COLUMN FOR SPACING -->
-                            </div>
+                    <div class="row">
+                        <div class="col">
+                            Memory:
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                Memory:
-                            </div>
-
-                            <div class="col">
-                                <select v-model="userRamScore">
+                        <div class="col">
+                            <select v-model="userRamScore">
                                 <option value=1 >1</option>
                                 <option value=2 >2</option>
                                 <option value=3 >3</option>
@@ -75,20 +66,16 @@
                                 <option value=9 >9</option>
                                 <option value=10 >10</option>
                             </select>
-                            </div>
+                        </div>
+                    </div>
 
-                            <div class="col">
-                                <!-- EMPTY COLUMN FOR SPACING -->
-                            </div>
+                    <div class="row">
+                        <div class="col">
+                            Storage:
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                Storage:
-                            </div>
-
-                            <div class="col">
-                                <select v-model="userStorageScore">
+                        <div class="col">
+                            <select v-model="userStorageScore">
                                 <option value=1 >1</option>
                                 <option value=2 >2</option>
                                 <option value=3 >3</option>
@@ -100,20 +87,16 @@
                                 <option value=9 >9</option>
                                 <option value=10 >10</option>
                             </select>
-                            </div>
+                        </div>
+                    </div>
 
-                            <div class="col">
-                                <!-- EMPTY COLUMN FOR SPACING -->
-                            </div>
+                    <div class="row">
+                        <div class="col">
+                            Battery Life:
                         </div>
 
-                        <div class="row">
-                            <div class="col">
-                                Battery Life:
-                            </div>
-
-                            <div class="col">
-                                <select v-model="userBatteryScore">
+                        <div class="col">
+                            <select v-model="userBatteryScore">
                                 <option value=1 >1</option>
                                 <option value=2 >2</option>
                                 <option value=3 >3</option>
@@ -125,20 +108,20 @@
                                 <option value=9 >9</option>
                                 <option value=10 >10</option>
                             </select>
-                            </div>
-
-                            <div class="col">
-                                <!-- EMPTY COLUMN FOR SPACING -->
-                            </div>
                         </div>
                     </div>
                 </div>
 
                 <button @click="getUserPref">Submit preferences</button>
             </div>
-            
-            <div class="recommendation">
-                
+
+            <div class="recommendation" v-if="recommendedLaptop.model.length > 0">
+                <h2>{{ recommendedLaptop.model }}</h2>
+                <p>${{ recommendedLaptop.price }}</p>
+                <p>{{ recommendedLaptop.cpu_score }} CPU score index <a href='https://www.cpubenchmark.net/'>(Passmark)</a></p>
+                <p>{{ recommendedLaptop.ram_capacity }} GB of memory</p>
+                <p>{{ recommendedLaptop.storage }} GB of storage space</p>
+                <p>{{ recommendedLaptop.battery }} hours of battery life</p>
             </div>
         </div>
     </main>
@@ -148,8 +131,9 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script src="app.js"></script>
+    <script src="index.js"></script>
 </body>
 
 </html>

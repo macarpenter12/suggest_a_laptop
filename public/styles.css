@@ -69,8 +69,14 @@ header {
 
 .userPrefs {
     width: 40%;
+    margin-bottom: 24px;
 }
 
 .userPrefsInput {
+    width: 70%;
     margin-bottom: 24px;
+}
+
+.recommendation {
+    width: 40%;
 }
