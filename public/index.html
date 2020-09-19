@@ -115,6 +115,12 @@
                 <button @click="getUserPref">Submit preferences</button>
             </div>
 
+            <div class="responseErrors" v-if="errorMessages.length > 0">
+                <ul>
+                    <li v-for='error in errorMessages'>{{ error }}</li>
+                </ul>
+            </div>
+
             <div class="recommendation" v-if="recommendedLaptop.model.length > 0">
                 <h2>{{ recommendedLaptop.model }}</h2>
                 <p>${{ recommendedLaptop.price }}</p>
