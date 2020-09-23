@@ -1,12 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const app = express.Router();
+const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: false
 }));
-app.use(express.static(__dirname + 'public'));
+app.use(express.static('public'));
 
 const DB_ADDRESS = 'mongodb://localhost:27017/suggest_a_laptop';
 const mongoose = require('mongoose');
@@ -24,6 +24,7 @@ const laptopSchema = new mongoose.Schema({
 });
 const Laptop = mongoose.model('Laptop', laptopSchema);
 
+const PORT_NUMBER = 3000;
 
 
 
@@ -154,6 +155,9 @@ app.delete('/laptop/:model', async(req, res) => {
     }
 });
 
+app.listen(PORT_NUMBER, function() {
+    console.log('Listening on port ' + PORT_NUMBER + '!');
+});
 
 
 async function budgetSelect(userBudget) {
@@ -238,5 +242,3 @@ function selectCheapest(laptops) {
     });
     return min;
 }
-
-module.exports = app;
