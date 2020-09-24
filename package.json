@@ -22,7 +22,6 @@
     "express": "^4.17.1",
     "mongo": "^0.1.0",
     "mongodb": "^3.5.8",
-    "mongoose": "^5.9.17",
-    "sqlite3": "^4.2.0"
+    "mongoose": "^5.9.17"
   }
 }
