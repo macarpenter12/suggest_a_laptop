@@ -26,6 +26,11 @@ const Laptop = mongoose.model('Laptop', laptopSchema);
 
 const PORT_NUMBER = 3000;
 
+const CPU_NAME = "CPU score";
+const RAM_NAME = "memory capacity";
+const STORAGE_NAME = "storage capacity";
+const BATTERY_NAME = "battery life";
+
 
 
 
@@ -56,19 +61,19 @@ app.get('/laptop', async(req, res) => {
 
 app.post('/suggestion', async(req, res) => {
     let userScores = [{
-            'name': 'cpuScore',
+            'name': CPU_NAME,
             'score': req.body.cpuScore
         },
         {
-            'name': 'ramScore',
+            'name': RAM_NAME,
             'score': req.body.ramScore
         },
         {
-            'name': 'storageScore',
+            'name': STORAGE_NAME,
             'score': req.body.storage
         },
         {
-            'name': 'battery',
+            'name': BATTERY_NAME,
             'score': req.body.battery
         }
     ];
@@ -82,30 +87,30 @@ app.post('/suggestion', async(req, res) => {
 
     if (oldResult.length < 1) {
         errorArray.push('Budget too low');
-        res.send({errors: errorArray});
+        res.send({result: null, errors: errorArray});
         return;
     }
     
     for (let i = 0; i < userScores.length; i++) {
         let nextScore = userScores[i];
         switch (nextScore.name) {
-            case 'cpuScore':
+            case CPU_NAME:
                 newResult = await cpuSelect(oldResult, nextScore.score);
                 break;
-            case "ramScore":
+            case RAM_NAME:
                 newResult = await ramSelect(oldResult, nextScore.score);
                 break;
-            case "storageScore":
+            case STORAGE_NAME:
                 newResult = await storageSelect(oldResult, nextScore.score);
                 break;
-            case "battery":
+            case BATTERY_NAME:
                 newResult = await batterySelect(oldResult, nextScore.score);
                 break;
         }
         
         if (newResult.length < 1) {
             newResult = oldResult;
-            errorArray.push("We weren't able to find a laptop that met your requirements for " + nextScore.name);
+            errorArray.push("We weren't able to find a laptop that met your requirements for " + nextScore.name + " given your priorities.");
         }
         
         oldResult = newResult;
@@ -155,9 +160,16 @@ app.delete('/laptop/:model', async(req, res) => {
     }
 });
 
+
+
+
+
 app.listen(PORT_NUMBER, function() {
     console.log('Listening on port ' + PORT_NUMBER + '!');
 });
+
+
+
 
 
 async function budgetSelect(userBudget) {
